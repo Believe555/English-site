@@ -50,6 +50,17 @@ def add_checkin():
     conn.commit()
     conn.close()
 
+def init_wrong_words_db():
+    conn = sqlite3.connect('english.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS wrong_words (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            word TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 
 

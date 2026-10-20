@@ -16,6 +16,7 @@ app.add_middleware(
 database.init_db()
 database.import_words_from_json()
 database.init_checkin_db()
+database.init_wrong_words_db()
 
 #返回index.html网页
 @app.get("/")
@@ -32,3 +33,20 @@ def get_word():
 def do_checkin():
     database.add_checkin()
     return {"message": "打卡成功！今天你超棒！"}
+
+
+@app.get("/api/get_stats")
+def get_stats():
+    conn = database.sqlite3.connect('english.db')
+    cursor = conn.cursor()
+
+    # 数一数错词本里有多少个词
+    cursor.execute("SELECT COUNT(*) FROM wrong_words")
+    wrong_count = cursor.fetchone()[0]
+
+    # 数一数打过多少次卡
+    cursor.execute("SELECT COUNT(*) FROM checkins")
+    checkin_count = cursor.fetchone()[0]
+
+    conn.close()
+    return {"wrong_count": wrong_count, "checkin_count": checkin_count}
