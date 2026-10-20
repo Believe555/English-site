@@ -43,6 +43,9 @@
     <div class="btn-group">
         <button id="btn-next" onclick="fetchWord()">换一个单词</button>
         <button id="btn-checkin" onclick="checkIn()">今天背完了，打卡！</button>
+        <button onclick="handleAnswer('认识')" style="background: #38a169;">认识</button>
+        <button onclick="handleAnswer('不认识')" style="background: #e53e3e;">不认识</button>
+        <button onclick="showWrongWords()" style="background: #3182ce; margin-top: 10px;">查看错词本</button>
     </div>
     <div id="stats-box"
          style="margin-top: 20px; font-size: 14px; color: #666; background: #f7fafc; padding: 10px; border-radius: 8px;">
@@ -51,12 +54,55 @@
 </div>
 
 <script>
+    // 处理认识 / 不认识的逻辑
+    async function handleAnswer(status) {
+         const currentWord = document.getElementById('word-display').innerText;
+         if (currentWord === "加载中" || currentWord === "获取中...") return;
+
+    // 1. 把学习记录传给后端
+         await fetch('/api/add_history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: currentWord, status: status })
+         });
+
+    // 2. 如果不认识，就自动记入错词本
+        if (status === '不认识') {
+        await fetch('/api/add_wrong_word', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ word: currentWord })
+        });
+        // 红色闪烁提示
+        document.body.style.backgroundColor = "#fed7d7";
+        setTimeout(() => document.body.style.backgroundColor = "", 200);
+        } else {
+        // 绿色闪烁提示
+        document.body.style.backgroundColor = "#c6f6d5";
+        setTimeout(() => document.body.style.backgroundColor = "", 200);
+        }
+
+    // 3. 刷新统计面板的数字，并自动切下一个词
+        loadStats();
+        fetchWord();
+    }
+
+// 查看错词本弹窗
+    async function showWrongWords() {
+        const response = await fetch('/api/get_wrong_words');
+        const data = await response.json();
+        if (data.wrong_words.length === 0) {
+        alert("你的错词本是空的，先去背几个词吧！");
+        } else {
+        alert("你的错词本：\\n\\n" + data.wrong_words.join("\\n"));
+    }
+}
     async function loadStats() {
         try {
     const response = await fetch('/api/get_stats');
     const data = await response.json();
     document.getElementById('stats-box').innerText =
-        `?? 你的战绩：已打卡 ${data.checkin_count} 次，共记录 ${data.wrong_count} 个错词！`;
+        `你的战绩：已打卡 ${data.checkin_count} 次，共记录 ${data.wrong_count} 个错词！`;
 } catch (error) {
     document.getElementById('stats-box').innerText = "无法获取数据";
 }
