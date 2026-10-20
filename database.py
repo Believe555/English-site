@@ -1,5 +1,6 @@
 import sqlite3
 import datetime
+import json
 
 def init_db():
     conn = sqlite3.connect('english.db')
@@ -48,3 +49,27 @@ def add_checkin():
     cursor.execute("INSERT INTO checkins (date) VALUES (?)", (today,))
     conn.commit()
     conn.close()
+
+
+
+
+def import_words_from_json():
+    try:
+        with open('words.json', 'r', encoding='utf-8') as file:
+            words_data = json.load(file)
+    except Exception as e:
+        print("读取 words.json 失败:", e)
+        return
+
+    conn = sqlite3.connect('english.db')
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM words")  # 清空旧词
+
+    for item in words_data:
+        cursor.execute(
+            "INSERT INTO words (word, meaning) VALUES (?, ?)",
+            (item['word'], item['meaning'])
+        )
+    conn.commit()
+    conn.close()
+    print(f"🎉 成功从 words.json 导入了 {len(words_data)} 个单词！")
