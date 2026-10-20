@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的全栈英语网站</title>
+    <style>
+        /* 漂亮的渐变背景 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        /* 白色卡片设计 */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 320px;
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        h2 {
+            color: #555;
+            font-size: 18px;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+        /* 单词文字 */
+        .word {
+            font-size: 42px;
+            font-weight: 800;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            transition: opacity 0.3s ease;
+        }
+        /* 中文意思 */
+        .meaning {
+            font-size: 20px;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            transition: opacity 0.3s ease;
+        }
+        /* 漂亮的按钮 */
+        button {
+            background: #6a11cb;
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        button:hover {
+            box-shadow: 0 8px 25px rgba(106, 17, 203, 0.5);
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>考研核心词汇</h2>
+        <div class="word" id="word-display">加载中</div>
+        <div class="meaning" id="meaning-display"></div>
+        <button onclick="fetchWord()">下一词</button>
+    </div>
+
+    <script>
+        async function fetchWord() {
+            // 获取元素
+            const wordElement = document.getElementById('word-display');
+            const meaningElement = document.getElementById('meaning-display');
+
+            // 动画：先变透明
+            wordElement.style.opacity = '0.3';
+            meaningElement.style.opacity = '0.3';
+            wordElement.innerText = "获取中...";
+            meaningElement.innerText = "";
+
+            try {
+                // 请求后端
+                const response = await fetch('/api/get_word');
+                const data = await response.json();
+
+                // 稍微延迟一下再显示，制造平滑过渡的感觉
+                setTimeout(() => {
+                    wordElement.innerText = data.word;
+                    meaningElement.innerText = data.meaning;
+                    wordElement.style.opacity = '1';
+                    meaningElement.style.opacity = '1';
+                }, 150);
+
+            } catch (error) {
+                wordElement.innerText = "网络错误";
+                wordElement.style.opacity = '1';
+            }
+        }
+        // 刚打开网页时自动加载
+        fetchWord();
+    </script>
+</body>
+</html>
