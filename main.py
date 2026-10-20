@@ -40,6 +40,7 @@ words = [
 def read_root():
     return FileResponse("index.html")
 
+
 @app.get("/api/get_word")
 def get_word():
     return random.choice(words)
